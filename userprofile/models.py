@@ -9,6 +9,7 @@ from items.models import Listing
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     favorites = models.ManyToManyField(Listing, blank=True, related_name='favorited_by')  # each user profile has multiple favorite listings
+    # user_items = models.ManyToManyField(Listing, blank=True, related_name='user_items')
     is_verified = models.BooleanField(default=False)
     
     def __str__(self):

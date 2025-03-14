@@ -2,11 +2,12 @@ from rest_framework import viewsets
 from categories.serializers import CategorySerializer
 from .models import Listing
 from .serializers import ItemSerializer
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q #for searching stuff
+from django.contrib.auth.models import User
 
 
 
@@ -34,11 +35,10 @@ class ItemViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def favorites(self, request):
         """This function returns all favorites for the user."""
-        print("\n\nrequest:", request.GET.get("q", ""), "\n\n")
         user_profile = request.user.profile
         favorites = user_profile.favorites.all()
         serializer = ItemSerializer(favorites, many=True, context={'request': request}) # serialize a queryset of Listing objects into JSON...many=True iterates over queryset to serialize each Listing object, without many=True seriealizer expects single Listing instance
-        print(serializer.data)
+        print("\n\nFavorited Items:", serializer.data)
         return Response(serializer.data) # create response to be sent back to client
     
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
@@ -53,15 +53,6 @@ class ItemViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
     def search_items(self, request, pk=None):
         """This function returns all items for the given category."""
-        # try:
-        #     category = Category.objects.get(pk=pk)
-        # except Category.DoesNotExist:
-        #     return Response({"error": "Category not found."}, status=404)
-        # items = Listing.objects.filter(category=category)
-        # serializer = ItemSerializer(items, many=True, context={'request': request}) # serialize a queryset of Listing objects into JSON...many=True iterates over queryset to serialize each Listing object, without many=True seriealizer expects single Listing instance
-        # return Response(serializer.data) # create response to be sent back to client
-        # print("\n\n\n", request, "\n\n\n")
-        # query = ""
         query = request.GET.get("q", "")
         if query:
             items = Listing.objects.filter(
@@ -72,5 +63,12 @@ class ItemViewSet(viewsets.ModelViewSet):
         else:
             items = Listing.objects.none() #we didn't find anything so return nothing
         serializer = ItemSerializer(items, many=True, context={'request': request}) #serialize the data to return in a Response
-        print("\n\n\n", serializer.data, "\n\n\n")
+        print("\n\nSearched Items:", serializer.data)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def my_items(self, request):
+        user = request.user  # Get the logged-in user
+        items = Listing.objects.filter(seller=user)  # Get only their listings
+        serializer = ItemSerializer(items, many=True)
         return Response(serializer.data)
