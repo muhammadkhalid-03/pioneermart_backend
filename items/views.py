@@ -70,5 +70,5 @@ class ItemViewSet(viewsets.ModelViewSet):
     def my_items(self, request):
         user = request.user  # Get the logged-in user
         items = Listing.objects.filter(seller=user)  # Get only their listings
-        serializer = ItemSerializer(items, many=True)
+        serializer = ItemSerializer(items, many=True, context={'request': request})
         return Response(serializer.data)
