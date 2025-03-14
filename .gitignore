@@ -1,2 +1,11 @@
 env/
 config.py
+__pycache__/
+userprofile/__pycache__/
+pioneermart_backend/__pycache__/
+optauth/__pycache__/
+items/__pycache__/
+categories/__pycache__/
+/__pycache__/
+media/.DS_Store
+.DS_Store
