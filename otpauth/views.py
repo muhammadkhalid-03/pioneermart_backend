@@ -31,7 +31,6 @@ class RequestOTPView(APIView):
             subject = 'Your OTP for authentication'
             message = f'Your OTP is {otp.otp}. It will expire in 10 minutes.'
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
-            print('here')
             
             return Response({"detail": "OTP sent to your email"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -63,7 +62,6 @@ class VerifyOTPView(APIView):
                         'access': str(refresh.access_token),
                         'user': UserSerializer(user).data
                     }
-                    print(response_data)
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
                     return Response({"detail": "Invalid or expired OTP"}, status=status.HTTP_400_BAD_REQUEST)

@@ -70,7 +70,6 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
-    'pioneermart_backend.middleware.DebugMiddleware',  # Add this line temporarily
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

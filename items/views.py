@@ -26,10 +26,13 @@ class ItemViewSet(viewsets.ModelViewSet):
         except Listing.DoesNotExist:
             return Response({"error": "Listing not found."}, status=404)
         if user_profile.favorites.filter(pk=pk).exists():
+            user_profile.favorites.filter(pk=pk).is_favorited = False
             user_profile.favorites.remove(listing) #if item is already in favorites, remove it
-            return Response({"error": "Listing not found."})
+            return Response({"message": "Listing removed from favorites."})
         else:
             user_profile.favorites.add(listing) #if item is not in favorites, add it
+            user_profile.favorites.filter(pk=pk).is_favorited = False
+
             return Response({"message": "Listing added to favorites."})
     
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
@@ -39,6 +42,26 @@ class ItemViewSet(viewsets.ModelViewSet):
         favorites = user_profile.favorites.all()
         serializer = ItemSerializer(favorites, many=True, context={'request': request}) # serialize a queryset of Listing objects into JSON...many=True iterates over queryset to serialize each Listing object, without many=True seriealizer expects single Listing instance
         print("\n\nFavorited Items:", serializer.data)
+        return Response(serializer.data) # create response to be sent back to client
+    
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def search_favorites(self, request):
+        """This function searches favorites for the user."""
+        query = request.GET.get("q", "")
+        user_profile = request.user.profile
+        favorites = user_profile.favorites.all()
+        if query:
+            items = favorites.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(category__name__icontains=query)  # search in title, description, and category name
+            )
+        else:
+            items = favorites.all()
+        # user_profile = request.user.profile
+        # favorites = user_profile.favorites.all()
+        serializer = ItemSerializer(items, many=True, context={'request': request}) # serialize a queryset of Listing objects into JSON...many=True iterates over queryset to serialize each Listing object, without many=True seriealizer expects single Listing instance
+        print("\n\nFavorited Items Search:", serializer.data)
         return Response(serializer.data) # create response to be sent back to client
     
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
@@ -61,7 +84,7 @@ class ItemViewSet(viewsets.ModelViewSet):
                 Q(category__name__icontains=query)  # search in title, description, and category name
             )
         else:
-            items = Listing.objects.none() #we didn't find anything so return nothing
+            items = Listing.objects.all() #we didn't find anything so return nothing
         serializer = ItemSerializer(items, many=True, context={'request': request}) #serialize the data to return in a Response
         print("\n\nSearched Items:", serializer.data)
         return Response(serializer.data)
@@ -70,5 +93,20 @@ class ItemViewSet(viewsets.ModelViewSet):
     def my_items(self, request):
         user = request.user  # Get the logged-in user
         items = Listing.objects.filter(seller=user)  # Get only their listings
+        serializer = ItemSerializer(items, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
+    def search_my_items(self, request):
+        user = request.user  # Get the logged-in user
+        query = request.GET.get("q", "")
+        if query:
+            items = Listing.objects.filter(seller=user).filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(category__name__icontains=query)
+            )  # Get only their listings
+        else:
+            items = Listing.objects.filter(seller=user)
         serializer = ItemSerializer(items, many=True, context={'request': request})
         return Response(serializer.data)
