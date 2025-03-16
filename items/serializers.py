@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Listing, Category
+from .models import Listing
 
 class ItemSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
@@ -7,6 +7,7 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Listing
         fields = '__all__' # get all fields
     
+    #checks if the user has favorited a listing
     def get_is_favorited(self, obj):
-        context = self.context
-        return context.get('is_favorited', False)
+        user = self.context.get('request').user
+        return obj in user.profile.favorites.all()
