@@ -26,11 +26,14 @@ SECRET_KEY = config.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.254.30', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.254.30', 'localhost', '127.0.0.1', '132.161.188.153']
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+DEVELOPMENT_MODE = False  # Set to False in production
+DEVELOPMENT_USER_ID = 17
 
 # Application definition
 

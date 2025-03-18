@@ -2,9 +2,11 @@ from rest_framework import viewsets
 from categories.serializers import CategorySerializer
 from .models import Listing
 from .serializers import ItemSerializer
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser #parse form content + media files
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q #for searching stuff
 
@@ -15,8 +17,19 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
     authentication_classes = [JWTAuthentication]  # Use JWT authentication
     permission_classes = [IsAuthenticated]  # Ensure authentication is required
+    parser_classes = [MultiPartParser, FormParser]  # Ensure media files are handled
+
+    # def create(self, request, *args, **kwargs):
+    #     """Handles creating a new listing."""
+    #     serializer = self.get_serializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save(seller=request.user)  # Ensure seller is set
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated]) #detail True cause we're doing smth to one single instance of the model
+    # @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated]) #detail True cause we're doing smth to one single instance of the model
     def toggle_favorite(self, request, pk=None):
         """This function toggles a listing as favorite for the user."""
         user_profile = request.user.profile #get instance of currently logged-in user
@@ -102,3 +115,13 @@ class ItemViewSet(viewsets.ModelViewSet):
             items = Listing.objects.filter(seller=user)
         serializer = ItemSerializer(items, many=True, context={'request': request})
         return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated], parser_classes=[MultiPartParser, FormParser])
+    def create_item(self, request):
+        """Handles creating a new listing at /api/items/create/"""
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(seller=request.user)  # Ensure seller is set
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
