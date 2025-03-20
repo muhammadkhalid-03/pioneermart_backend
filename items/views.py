@@ -50,7 +50,6 @@ class ItemViewSet(viewsets.ModelViewSet):
         user_profile = request.user.profile
         favorites = user_profile.favorites.all()
         serializer = ItemSerializer(favorites, many=True, context={'request': request}) # serialize a queryset of Listing objects into JSON...many=True iterates over queryset to serialize each Listing object, without many=True seriealizer expects single Listing instance
-        print("\n\nFavorited Items:", serializer.data)
         return Response(serializer.data) # create response to be sent back to client
     
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated])
