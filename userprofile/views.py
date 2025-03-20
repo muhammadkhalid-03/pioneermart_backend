@@ -1,4 +1,6 @@
 # userprofile/views.py
+from django.shortcuts import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser #parse form content + media files
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
