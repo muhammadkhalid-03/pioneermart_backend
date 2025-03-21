@@ -9,5 +9,4 @@ router.register(r'items', ItemViewSet) #if using ViewSet!! this registers all CR
 
 urlpatterns = [
     path('', include(router.urls)), #if using ViewSet
-    # path('/items/create/', include(router.urls))
 ]

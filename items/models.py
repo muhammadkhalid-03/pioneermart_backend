@@ -13,8 +13,12 @@ class Listing(models.Model):
     image = models.ImageField(upload_to='item_images', blank=True, null=True) #django will create item_images if folder doesn't exist
     is_sold = models.BooleanField(default=False)
     seller = models.ForeignKey(User, related_name='items', on_delete=models.CASCADE) #if user is deleted, all items are also deleted
-    seller_name = models.CharField(max_length=255, blank=True)  # New field to store the seller's name
+    seller_name = models.CharField(max_length=255, blank=True, editable=False)  # New field to store the seller's name
     created_at = models.DateTimeField(auto_now_add=True) #add date/time automatically
+    # updated_at = models.DateTimeField(auto_now=True)  #TODO: do this after editing functionality
+
+    class Meta:
+        ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
         # Auto-populate seller_name based on the User model
